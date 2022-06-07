@@ -40,7 +40,7 @@ USER_IDS_OUTPUT_MODE = "overwrite"
 GOODREADS_USER_ID_KEY = "user_id"
 HDFS_USER_ID = "hdfs_user_id"
 
-POSITIONAL_BOOK_ID = "id"
+POSITIONAL_BOOK_ID = "positional_id"
 HDFS_BOOK_ID = "hdfs_book_id"
 
 MODEL_COLUMNS = ["user_id", "book_id", "rating"]
@@ -71,5 +71,8 @@ USER_HISTORY_KEY = "history"
 
 BOOK_ID_KEY = "id"
 BOOK_RATING_KEY = "rating"
+
+PREDICTED_RATING_KEY = "predicted_rating"
+PREDICTED_ID_KEY = "predicted_id"
 
 N_CANDIDATES = 1000

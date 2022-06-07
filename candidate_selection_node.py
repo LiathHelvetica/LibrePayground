@@ -3,7 +3,7 @@ from kafka import KafkaConsumer, KafkaProducer
 from properties import CANDIDATE_SELECTION_CONSUMER_GROUP, CANDIDATE_SELECTION_TOPIC, BOOTSTRAP_SERVERS,\
 	CANDIDATE_SELECTION_REQUESTS_TOPIC, MASTER_URL, MEMORY_IN_G, APP_NAME, N_CANDIDATES, HDFS_URL_FORMAT, MODEL_PATH, \
 	USER_HISTORY_KEY, USER_ID_KEY, HDFS_USER_ID, KEY_REPLACEMENT, POSITIONAL_BOOK_ID, HDFS_BOOK_ID, BOOK_ID_KEY, \
-	BOOK_RATING_KEY
+	BOOK_RATING_KEY, PREDICTED_RATING_KEY, PREDICTED_ID_KEY
 from json import loads
 from pyspark.ml.recommendation import ALSModel
 from numpy import matrix, asarray, zeros
@@ -53,10 +53,24 @@ for message in consumer:
 		recommendations_id_list = list(map(lambda r: r.book_id, recommendations[0][0]))
 	else:
 		user_data = zeros(n_books)
-		# TODO: join instead of iteration
-		for history_piece in history:
-			positional_id = books.filter(books[HDFS_BOOK_ID] == history_piece[BOOK_ID_KEY]).collect()[0][POSITIONAL_BOOK_ID]
-			user_data[positional_id] = history_piece[BOOK_RATING_KEY]
-		user_prediction_result = user_data @ item_factors @ item_factors_t
-		# TODO: select top results
+		user_history = list(map(lambda o: (o[BOOK_ID_KEY], o[BOOK_RATING_KEY]), history))
+		user_history = spark.createDataFrame(user_history, [BOOK_ID_KEY, BOOK_RATING_KEY])
+		user_history_positional = user_history.join(books, user_history[BOOK_ID_KEY] == books[HDFS_BOOK_ID], "inner")
+		for row in user_history_positional.rdd.toLocalIterator():
+			user_data[row[POSITIONAL_BOOK_ID]] = row[BOOK_RATING_KEY]
+		user_prediction_result = (user_data @ item_factors @ item_factors_t).A[0, :].tolist()
+		user_predictions_df = spark.createDataFrame(
+			list(enumerate(user_prediction_result)), [PREDICTED_ID_KEY, PREDICTED_RATING_KEY]
+		)
+		user_predictions_df = user_predictions_df.join(
+			books,
+			books[POSITIONAL_BOOK_ID] == user_predictions_df[PREDICTED_ID_KEY],
+			"inner"
+		)
+		recommendations_id_list = list(map(
+			lambda r: r[HDFS_BOOK_ID],
+			user_predictions_df.orderBy(user_predictions_df[PREDICTED_RATING_KEY].desc()).head(N_CANDIDATES)
+		))
+	# recommendations_id_list - list of goodreads books ids - selected candidates
+	# TODO: candidate ranking
 	print(recommendations_id_list)

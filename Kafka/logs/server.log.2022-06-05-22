@@ -1,0 +1,7 @@
+[2022-06-05 22:13:40,660] INFO Creating topic candidate-selection with configuration {} and initial partition assignment HashMap(0 -> ArrayBuffer(0)) (kafka.zk.AdminZkClient)
+[2022-06-05 22:13:40,739] INFO [Controller id=0, targetBrokerId=0] Node 0 disconnected. (org.apache.kafka.clients.NetworkClient)
+[2022-06-05 22:13:40,773] INFO [ReplicaFetcherManager on broker 0] Removed fetcher for partitions Set(candidate-selection-0) (kafka.server.ReplicaFetcherManager)
+[2022-06-05 22:13:40,860] INFO [LogLoader partition=candidate-selection-0, dir=/tmp/kafka-logs] Loading producer state till offset 0 with message format version 2 (kafka.log.UnifiedLog$)
+[2022-06-05 22:13:40,873] INFO Created log for partition candidate-selection-0 in /tmp/kafka-logs/candidate-selection-0 with properties {} (kafka.log.LogManager)
+[2022-06-05 22:13:40,875] INFO [Partition candidate-selection-0 broker=0] No checkpointed highwatermark is found for partition candidate-selection-0 (kafka.cluster.Partition)
+[2022-06-05 22:13:40,875] INFO [Partition candidate-selection-0 broker=0] Log loaded for partition candidate-selection-0 with initial high watermark 0 (kafka.cluster.Partition)
